@@ -1,13 +1,16 @@
 # Proyecto-SecurityDS
-Michelle Mejía 22596 y  Silvia Illescas 22376
+
+Michelle Mejía 22596 y Silvia Illescas 22376
+
+---
 
 ## 1. Descripción del proyecto
 
-Este proyecto tiene como objetivo desarrollar un sistema capaz de detectar si un audio corresponde a voz humana real o voz sintética generada mediante modelos de síntesis de voz (Text-to-Speech). El problema se enmarca dentro del área de **seguridad informática**, específicamente en la detección de **deepfakes de audio**, los cuales pueden utilizarse en ataques de ingeniería social, fraude o suplantación de identidad.
+Este proyecto tiene como objetivo desarrollar un sistema capaz de detectar si un audio corresponde a voz humana real o voz sintética generada mediante modelos de síntesis de voz (Text-to-Speech).
 
-Para abordar este problema, se utilizan técnicas de **Machine Learning** y **Deep Learning**, comparando el desempeño de un modelo tradicional (**Random Forest**) con un modelo basado en redes neuronales profundas (**Convolutional Neural Network - CNN**).
+El problema se enmarca dentro del área de **seguridad informática**, específicamente en la detección de **deepfakes de audio**, los cuales pueden utilizarse en ataques de ingeniería social, fraude o suplantación de identidad.
 
-El dataset utilizado es **Fake-or-Real (FoR)**, el cual contiene miles de grabaciones de voz humana y voz generada por sistemas modernos de síntesis de voz.
+Para abordar este problema, se utilizan técnicas de **Machine Learning**, comparando el desempeño de distintos modelos a partir de características acústicas extraídas del audio.
 
 ---
 
@@ -26,16 +29,14 @@ Se utiliza el dataset **Fake-or-Real (FoR)**, el cual contiene aproximadamente *
 
 El dataset incluye múltiples versiones:
 
-* for-original → archivos originales
-* for-norm → audios normalizados y balanceados
-* for-2sec → audios truncados a 2 segundos
-* for-rerec → audios regrabados para simular escenarios reales
+* `for-original` → archivos originales
+* `for-norm` → audios normalizados y balanceados
+* `for-2sec` → audios truncados a 2 segundos
+* `for-rerec` → audios regrabados para simular escenarios reales
 
 Para este proyecto se utiliza la versión:
 
-**for-norm**
-
-porque presenta datos balanceados y normalizados, lo que facilita el entrenamiento de modelos.
+**for-norm**, ya que presenta datos balanceados y normalizados.
 
 ---
 
@@ -52,7 +53,6 @@ Librerías principales:
 * matplotlib
 * librosa
 * scikit-learn
-* tensorflow / keras
 * glob
 * os
 
@@ -63,24 +63,11 @@ Librerías principales:
 ```
 project/
 
-│
 ├── dataset/
-│
 ├── notebooks/
 │   ├── 01_EDA.ipynb
-│   ├── 02_preprocessing.ipynb
-│   ├── 03_random_forest.ipynb
-│   ├── 04_CNN.ipynb
-│
-├── src/
-│   ├── feature_extraction.py
-│   ├── model_rf.py
-│   ├── model_cnn.py
-│
-├── results/
-│   ├── confusion_matrix.png
-│   ├── accuracy_results.txt
-│
+│   ├── 02_Gen_y_Sel.ipynb
+│   ├── 03_Modelos_y_Evaluacion.ipynb
 ├── README.md
 ```
 
@@ -100,127 +87,93 @@ Se realiza un análisis inicial del dataset para comprender sus características
 * visualización de señales de audio
 * generación de espectrogramas
 
-El objetivo del EDA es identificar patrones que permitan diferenciar voz real de voz sintética.
-
 ---
 
-### 6.2 Preprocesamiento
+### 6.2 Generación y selección de características
 
-Los archivos de audio se convierten en representaciones numéricas que puedan ser utilizadas por los modelos de aprendizaje automático.
-
-Se utilizan técnicas como:
-
-* normalización de audio
-* conversión a espectrogramas Mel
-* extracción de características acústicas
-
-Características utilizadas:
+Los archivos de audio se transforman en representaciones numéricas mediante:
 
 * MFCC (Mel Frequency Cepstral Coefficients)
-* espectrograma Mel
+* espectrogramas Mel
 * zero crossing rate
 * energía de la señal
 * chroma features
 
----
-
-### 6.3 Modelo Random Forest
-
-Random Forest es un algoritmo de aprendizaje supervisado basado en múltiples árboles de decisión.
-
-Cada árbol realiza una predicción y el resultado final se obtiene mediante votación.
-
-Ventajas:
-
-* buen desempeño en datasets estructurados
-* robusto al overfitting
-* fácil interpretación
-
-El modelo se entrena utilizando las características acústicas extraídas del audio.
+Estas características permiten representar el audio de forma adecuada para los modelos de Machine Learning.
 
 ---
 
-### 6.4 Modelo CNN
+### 6.3 Modelado
 
-Las redes neuronales convolucionales (CNN) permiten analizar patrones en imágenes.
+Se implementan modelos de clasificación supervisada:
 
-En este proyecto, los audios se convierten en espectrogramas, los cuales pueden interpretarse como imágenes que representan la frecuencia en función del tiempo.
+* Logistic Regression
+* Random Forest
 
-La CNN permite detectar patrones característicos de voz sintética, tales como:
-
-* irregularidades en frecuencias
-* patrones repetitivos
-* falta de variabilidad natural
-
-Arquitectura general:
-
-* capa convolucional
-* función de activación ReLU
-* capa de pooling
-* capas densas
-* función de activación sigmoid
+Además, se aplica **GridSearchCV** para optimizar hiperparámetros y mejorar el desempeño de los modelos.
 
 ---
 
-### 6.5 Evaluación del modelo
+### 6.4 Evaluación del modelo
 
-Para evaluar el desempeño de los modelos se utilizan métricas de clasificación:
+Para evaluar el desempeño se utilizan métricas de clasificación:
 
-* accuracy
-* precision
-* recall
+* Accuracy
+* Precision
+* Recall
 * F1-score
-* matriz de confusión
+* Curva ROC
+* Matriz de confusión
 
-Estas métricas permiten comparar cuál modelo detecta mejor la voz sintética.
-
----
-
-## 7. Análisis exploratorio de datos (EDA)
-
-Durante el análisis exploratorio se evaluaron las siguientes características:
-
-### distribución de clases
-
-Se verificó que el dataset contiene una cantidad balanceada de audios reales y sintéticos.
-
-Esto es importante para evitar sesgos en el modelo.
+Estas métricas permiten analizar la capacidad del modelo para distinguir entre audios reales y sintéticos.
 
 ---
 
-### duración de audios
+## 7. Evaluación de modelos
 
-Se analizó la duración de las muestras de audio para verificar si existen diferencias entre voz real y sintética.
+En el notebook `03_Modelos_y_Evaluacion.ipynb` se realiza:
 
----
-
-### visualización de señales
-
-Se graficaron las ondas de audio para observar patrones en la amplitud.
-
----
-
-### espectrogramas
-
-Se generaron espectrogramas Mel para visualizar la distribución de frecuencias.
-
-Estos espectrogramas sirven como entrada para la CNN.
+* Implementación de modelos
+* Refinamiento mediante búsqueda de hiperparámetros
+* Evaluación completa de métricas
+* Generación de curva ROC
+* Análisis de matriz de confusión
 
 ---
 
-## 8. Pasos para ejecutar el proyecto
+## 8. Interpretación de resultados
 
-### 1. instalar dependencias
+Los resultados obtenidos permiten evaluar el desempeño de los modelos en el contexto del problema.
+
+El modelo Random Forest presenta un buen balance entre **precision y recall**, lo cual es importante en problemas de detección, ya que permite identificar correctamente casos positivos sin generar demasiados falsos positivos.
+
+La curva ROC y su valor AUC indican que el modelo tiene una adecuada capacidad de discriminación entre clases.
+
+En el contexto de seguridad informática, esto sugiere que el modelo puede ser utilizado como una herramienta de apoyo para la detección de deepfakes de audio.
+
+---
+
+## 9. Flujo del proyecto
+
+1. `01_EDA.ipynb` → análisis exploratorio de datos
+2. `02_Gen_y_Sel.ipynb` → extracción y selección de características
+3. `03_Modelos_y_Evaluacion.ipynb` → entrenamiento, refinamiento y evaluación
+
+---
+
+## 10. Pasos para ejecutar el proyecto
+
+### 1. Instalar dependencias
 
 ```
-pip install numpy pandas matplotlib librosa scikit-learn tensorflow
+pip install numpy pandas matplotlib librosa scikit-learn
 ```
 
 ---
 
-### 2. descargar dataset
+### 2. Descargar dataset
 
-descargar el dataset Fake-or-Real y ubicarlo en la carpeta:
+Descargar el dataset Fake-or-Real (FoR) y ubicarlo en:
 
 ```
 dataset/
@@ -228,47 +181,27 @@ dataset/
 
 ---
 
-### 3. ejecutar análisis exploratorio
-
-ejecutar:
+### 3. Ejecutar notebooks
 
 ```
 01_EDA.ipynb
+02_Gen_y_Sel.ipynb
+03_Modelos_y_Evaluacion.ipynb
 ```
 
 ---
 
-### 4. ejecutar preprocesamiento
+## 11. Nota importante
 
-```
-02_preprocessing.ipynb
-```
+El dataset original no se incluye en el repositorio debido a su tamaño.
 
----
+Para ejecutar completamente el proyecto, es necesario descargar el dataset y colocarlo en la carpeta `dataset/`.
 
-### 5. entrenar modelo Random Forest
-
-```
-03_random_forest.ipynb
-```
+Los archivos de características (`features_train`, `features_val`, `features_test`) deben generarse ejecutando el notebook `02_Gen_y_Sel.ipynb`.
 
 ---
 
-### 6. entrenar modelo CNN
-
-```
-04_CNN.ipynb
-```
-
----
-
-## 9. Resultados esperados
-
-Se espera que el modelo CNN obtenga mejor desempeño que Random Forest, debido a su capacidad de detectar patrones complejos en espectrogramas.
-
----
-
-## 10. Aplicaciones
+## 12. Aplicaciones
 
 Este proyecto puede aplicarse en:
 
@@ -278,4 +211,4 @@ Este proyecto puede aplicarse en:
 * sistemas de verificación de identidad
 * análisis forense digital
 
-
+---
